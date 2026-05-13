@@ -1,7 +1,13 @@
 import express from "express";
+import cors from "cors";
+
 import { users } from "./src/fakeData/fakeUser.js";
 
 const app = express();
+
+app.use(cors());
+
+app.use(express.json());
 
 app.get("/", (req, res) => {
   res.send(`<!doctype html>
@@ -38,6 +44,27 @@ app.get("/", (req, res) => {
 
 app.get("/users", (req, res) => {
   res.json(users);
+});
+
+app.post("/users", (req, res) => {
+  const newUser = req.body;
+  users.push(newUser);
+  res.json(newUser);
+});
+
+app.delete("/users/:id", (req, res) => {
+  const id = req.params.id;
+  const index = users.findIndex((user) => user.id === id);
+  users.splice(index, 1);
+  res.json(users);
+});
+
+app.put("/users/:id", (req, res) => {
+  const id = req.params.id;
+  const updatedUser = req.body;
+  const index = users.findIndex((user) => user.id === id);
+  users[index] = updatedUser;
+  res.json(updatedUser);
 });
 
 const PORT = 3002;
