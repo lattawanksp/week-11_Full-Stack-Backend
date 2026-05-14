@@ -48,4 +48,21 @@ router.put("/:id", (req, res) => {
   res.status(200).json(user);
 });
 
-// app.delete();
+router.delete("/:id", (req, res) => {
+  // 1. หาตำแหน่งของ user จาก id ที่ส่งมาใน URL
+  const userIndex = users.findIndex((u) => u.id === req.params.id);
+
+  // 2. ถ้าไม่เจอ user ให้ส่ง error 404 กลับไป
+  if (userIndex === -1) {
+    return res.status(404).json({ error: "User not found!" });
+  }
+
+  // 3. ลบ user ออกจาก array และเก็บข้อมูลที่ถูกลบไว้
+  const deletedUser = users.splice(userIndex, 1)[0];
+
+  // 4. ส่งผลลัพธ์กลับไปเมื่อ delete สำเร็จ
+  return res.status(200).json({
+    message: "Delete user successfully!",
+    user: deletedUser,
+  });
+});
