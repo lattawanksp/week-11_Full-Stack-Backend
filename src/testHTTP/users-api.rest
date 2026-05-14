@@ -1,1 +1,23 @@
+### Read all users
 GET http://localhost:3002/users
+
+
+### Create a new user
+POST http://localhost:3002/users
+Content-Type: application/json
+
+{
+    "username": "Lon",
+    "email": "lon@gmail.com",
+    "password": "pass555"
+}
+
+### Update a user
+PUT http://localhost:3002/users/1
+Content-Type: application/json
+
+{
+    "username": "Linny",
+    "email": "linlinny@gmail.com",
+    "password": "pass789"
+}
