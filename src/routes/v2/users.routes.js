@@ -1,26 +1,49 @@
 import { Router } from "express";
+import { users } from "../../fakeData/fakeUser.js";
+import { User } from "../../modules/users/user.model.js";
 
 export const router = Router();
 
-router.post("/", (req, res) => {
-  // 1. ใช้ Destructuring ดึงข้อมูล และป้องกัน error ด้วยการใส่ || {}
-  const { username, email } = req.body || {};
-  // 2. ตรวจสอบว่ามีข้อมูลครบถ้วนหรือไม่
-  if (!username || !email) {
-    return res.status(400).json({ error: "username and email are required" });
+const userResponse = (doc) => {
+  const user = doc.toObject();
+  delete user.password;
+  return user;
+};
+
+router.get("/", async (req, res) => {
+  try {
+    const users = await User.find();
+    return res.status(200).json({ success: true, data: users });
+  } catch {
+    error;
   }
-  // 3. คำนวณหา ID ตัวถัดไป (Simple incremental string id)
-  const nextId = String(
-    (users.reduce((max, u) => Math.max(max, Number(u.id)), 0) || 0) + 1,
-  );
-  // 4. สร้าง User Object ใหม่ (ใช้ Shorthand สำหรับ username และ email)
-  const newUser = { id: nextId, username, email };
-  // 5. บันทึกลงใน Array และตอบกลับ Client
-  users.push(newUser);
-  return res.status(201).json(newUser);
+  {
+    return res.status(400).json({ sucess: false, error: error });
+  }
 });
 
-router.put("/:id", (req, res) => {
+router.post("/", async (req, res) => {
+  // 1. ใช้ Destructuring ดึงข้อมูล และป้องกัน error ด้วยการใส่ || {}
+  const { username, email, password, role } = req.body || {};
+
+  // 2. ตรวจสอบว่ามีข้อมูลครบถ้วนหรือไม่
+  if (!username || !email || !password) {
+    const err = new Error("username, email, and password are required");
+    err.name = "ValidationError";
+    err.status = 400;
+    return res.status(400).json({ success: false, error: err });
+  }
+
+  try {
+    const doc = await User.create({ username, email, password, role });
+
+    return res.status(201).json({ success: true, data: userResponse(doc) });
+  } catch (err) {
+    return res.status(400).json({ success: false, error: err });
+  }
+});
+
+router.put("/:id", async (req, res) => {
   // 1. ค้นหา User จาก ID ที่ส่งมาใน URL (req.params.id)
   const user = users.find((u) => u.id === req.params.id);
   // 2. ถ้าหา User ไม่เจอ ให้ส่ง Error 404 กลับไป
@@ -43,7 +66,7 @@ router.put("/:id", (req, res) => {
   res.status(200).json(user);
 });
 
-router.delete("/:id", (req, res) => {
+router.delete("/:id", async (req, res) => {
   // 1. หาตำแหน่งของ user จาก id ที่ส่งมาใน URL
   const userIndex = users.findIndex((u) => u.id === req.params.id);
 

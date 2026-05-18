@@ -1,19 +1,7 @@
 import { Router } from "express";
+import { notes } from "../../fakeData/fakeNote.js";
 
 export const router = Router();
-
-const notes = [
-  {
-    id: "1",
-    title: "Learn Express",
-    content: "Practice routing and CRUD in Express.",
-  },
-  {
-    id: "2",
-    title: "Review REST API",
-    content: "Test GET POST PUT DELETE with REST Client.",
-  },
-];
 
 router.get("/", (req, res) => {
   res.json(notes);
