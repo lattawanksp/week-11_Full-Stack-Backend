@@ -3,11 +3,14 @@ import cors from "cors";
 
 import { connectDB } from "./config/mongodb.js";
 import { router as apiRoutes } from "./routes/index.js";
+import { connectSupabase } from "./config/supabase.js";
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+app.use("/api", apiRoutes);
 
 app.get("/", (req, res) => {
   res.send(`<!doctype html>
@@ -42,12 +45,11 @@ app.get("/", (req, res) => {
   </html>`);
 });
 
-app.use("/api", apiRoutes);
-
 const PORT = process.env.PORT || 3002;
 
 await connectDB();
+await connectSupabase();
 
 app.listen(PORT, () => {
-  console.log(`Server running on PORT: ${PORT}`);
+  console.log(`Server running on PORT: ${PORT} 🌍`);
 });

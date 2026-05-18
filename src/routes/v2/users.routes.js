@@ -1,9 +1,10 @@
 import { Router } from "express";
-import { users } from "../../fakeData/fakeUser.js";
 import { User } from "../../modules/users/user.model.js";
+// import { supabase } from "../../config/supabase.js";
 
 export const router = Router();
 
+//MongoDB routes (/api/v2/users)
 const userResponse = (doc) => {
   const user = doc.toObject();
   delete user.password;
@@ -14,11 +15,8 @@ router.get("/", async (req, res) => {
   try {
     const users = await User.find();
     return res.status(200).json({ success: true, data: users });
-  } catch {
-    error;
-  }
-  {
-    return res.status(400).json({ sucess: false, error: error });
+  } catch (error) {
+    return res.status(400).json({ sucess: false, error: error.message });
   }
 });
 
@@ -44,6 +42,83 @@ router.post("/", async (req, res) => {
 });
 
 router.put("/:id", async (req, res) => {
+  const { username, email, password } = req.body || {};
+
+  if (!username || !email || !password) {
+    return res
+      .status(400)
+      .json({ error: "username, email and password are required!" });
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.params.id,
+    { username, email, password },
+    { new: true }, // ← สำคัญมาก! บอกให้คืนข้อมูลหลัง update
+  );
+
+  if (!user) return res.status(404).json({ error: "User not found!" });
+
+  return res.status(200).json({ success: true, data: user });
+});
+
+router.delete("/:id", async (req, res) => {
+  // 1. หาตำแหน่งของ user จาก id ที่ส่งมาใน URL
+  const deleted = await User.findByIdAndDelete(req.params.id);
+
+  // 2. ถ้าไม่เจอ user ให้ส่ง error 404 กลับไป
+  if (!deleted) {
+    return res.status(404).json({ error: "User not found!" });
+  }
+  // 3. ส่งผลลัพธ์กลับไปเมื่อ delete สำเร็จ
+  return res.status(200).json({
+    message: "Delete user successfully!",
+    user: deleted,
+  });
+});
+
+//Supabase / PostgreSQL routes (/api/v2/users/pg)
+// Password is excluded from SELECT.
+/*
+const PG_SELECT = "id, username, email, role, created_at, updated_at";
+
+router.get("/pg", async (req, res) => {
+  try {
+    const { data, error } = await supabase.from("users").select(PG_SELECT);
+
+    if (error) throw error;
+
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    return res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+router.post("/pg", async (req, res) => {
+  const { username, email, password, role } = req.body || {};
+
+  if (!username || !email || !password) {
+    return res.status(400).json({
+      success: false,
+      error: "username, email, and password are required",
+    });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("users")
+      .insert({ username, email, password, role: role || "user" })
+      .select(PG_SELECT)
+      .single();
+
+    if (error) throw error;
+
+    return res.status(201).json({ success: true, data });
+  } catch (error) {
+    return res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+router.put("/pg/:id", async (req, res) => {
   // 1. ค้นหา User จาก ID ที่ส่งมาใน URL (req.params.id)
   const user = users.find((u) => u.id === req.params.id);
   // 2. ถ้าหา User ไม่เจอ ให้ส่ง Error 404 กลับไป
@@ -66,7 +141,7 @@ router.put("/:id", async (req, res) => {
   res.status(200).json(user);
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/pg/:id", async (req, res) => {
   // 1. หาตำแหน่งของ user จาก id ที่ส่งมาใน URL
   const userIndex = users.findIndex((u) => u.id === req.params.id);
 
@@ -84,3 +159,4 @@ router.delete("/:id", async (req, res) => {
     user: deletedUser,
   });
 });
+*/

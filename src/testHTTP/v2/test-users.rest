@@ -7,20 +7,20 @@ POST http://localhost:3002/api/v2/users
 Content-Type: application/json
 
 {
-    "username": "Lon",
-    "email": "lon@gmail.com",
-    "password": "pass5555"
+    "username": "test2",
+    "email": "test2@atsr.com",
+    "password": "ttttttttt"
 }
 
 ### Update a user
-PUT http://localhost:3002/api/v2/users/1
+PUT http://localhost:3002/api/v2/users/6a0a9665f29a5c68b4960509
 Content-Type: application/json
 
 {
-    "username": "Linny",
-    "email": "linlinny@gmail.com",
-    "password": "pass7899"
+    "username": "delete",
+    "email": "delte@gmail.com",
+    "password": "dddddddd"
 }
 
 ### Delete a user
-DELETE http://localhost:3002/api/v2/users/1
+DELETE http://localhost:3002/api/v2/users/6a0b1201a930b9b7d4e862b1
