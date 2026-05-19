@@ -6,16 +6,11 @@ import {
   createUser,
   updateUser,
   deleteUser,
-} from "../../modules/users/users.controller.js";
+} from "../../modules/users/users.v2.controller.js";
 
 export const router = Router();
 
 //MongoDB routes (/api/v2/users)
-const userResponse = (doc) => {
-  const user = doc.toObject();
-  delete user.password;
-  return user;
-};
 
 router.get("/", getUsers);
 

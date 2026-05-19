@@ -1,80 +1,24 @@
 import { Router } from "express";
 import { Product } from "../../modules/products/product.model.js";
 import { supabase } from "../../config/supabase.js";
+import {
+  getProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+} from "../../modules/products/products.v2.controller.js";
 
 export const router = Router();
 
 //MongoDB routes (/api/v2/products)
 
-router.get("/", async (req, res) => {
-  try {
-    const products = await Product.find();
-    return res.status(200).json({ sucess: true, data: products });
-  } catch (error) {
-    return res.status(400).json({ sucess: false, error: error.message });
-  }
-});
+router.get("/", getProducts);
 
-router.post("/", async (req, res) => {
-  const { name, price, category } = req.body || {};
+router.post("/", createProduct);
 
-  if (!name || !price || !category) {
-    return res
-      .status(400)
-      .json({ success: false, error: "name, price and category are required" });
-  }
+router.put("/:id", updateProduct);
 
-  try {
-    const product = await Product.create({ name, price, category });
-    return res.status(201).json({ success: true, data: product });
-  } catch (err) {
-    return res.status(400).json({ success: false, error: err.message });
-  }
-});
-
-router.put("/:id", async (req, res) => {
-  const { name, price, category } = req.body || {};
-
-  if (!name || !price || !category) {
-    return res
-      .status(400)
-      .json({ success: false, error: "name, price and category are required" });
-  }
-
-  try {
-    const product = await Product.findByIdAndUpdate(
-      req.params.id,
-      { name, price, category },
-      { new: true },
-    );
-
-    if (!product)
-      return res
-        .status(404)
-        .json({ success: false, error: "Product not found" });
-
-    return res.status(200).json({ success: true, data: product });
-  } catch (err) {
-    return res.status(400).json({ success: false, error: err.message });
-  }
-});
-
-router.delete("/:id", async (req, res) => {
-  try {
-    const product = await Product.findByIdAndDelete(req.params.id);
-
-    if (!product)
-      return res
-        .status(404)
-        .json({ success: false, error: "Product not found" });
-
-    return res
-      .status(200)
-      .json({ success: true, message: "Delete product successfully" });
-  } catch (err) {
-    return res.status(400).json({ success: false, error: err.message });
-  }
-});
+router.delete("/:id", deleteProduct);
 
 // Supabase / PostgreSQL routes (/api/v2/products/pg)
 
