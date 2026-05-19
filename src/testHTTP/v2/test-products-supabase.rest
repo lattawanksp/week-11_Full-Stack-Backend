@@ -1,0 +1,30 @@
+# Supabase / PostgreSQL — Products API (v2)
+# Base: /api/v2/products/pg
+#
+# IDs in Supabase are UUIDs — replace the placeholder below with a real one
+# after running the POST request.
+
+### Read all products (Supabase)
+GET http://localhost:3002/api/v2/products/pg
+
+### Create a new product (Supabase)
+POST http://localhost:3002/api/v2/products/pg
+Content-Type: application/json
+
+{
+    "name": "test4",
+    "price": 4444,
+    "category": "Furniture"
+}
+
+### Update a product (Supabase) — replace the UUID with a real id from POST response
+PUT http://localhost:3002/api/v2/products/pg/8a755f3a-d810-4dc8-a7a5-f635d6026ab6
+Content-Type: application/json
+
+{
+    "name": "test1 Updated",
+    "price": 5000
+}
+
+### Delete a product (Supabase) — replace the UUID with a real id from POST response
+DELETE http://localhost:3002/api/v2/products/pg/384530c0-7b5f-41d7-8139-2b7a5c25ee4e

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { User } from "../../modules/users/user.model.js";
-// import { supabase } from "../../config/supabase.js";
+import { supabase } from "../../config/supabase.js";
 
 export const router = Router();
 
@@ -78,7 +78,7 @@ router.delete("/:id", async (req, res) => {
 
 //Supabase / PostgreSQL routes (/api/v2/users/pg)
 // Password is excluded from SELECT.
-/*
+
 const PG_SELECT = "id, username, email, role, created_at, updated_at";
 
 router.get("/pg", async (req, res) => {
@@ -119,44 +119,63 @@ router.post("/pg", async (req, res) => {
 });
 
 router.put("/pg/:id", async (req, res) => {
-  // 1. ค้นหา User จาก ID ที่ส่งมาใน URL (req.params.id)
-  const user = users.find((u) => u.id === req.params.id);
-  // 2. ถ้าหา User ไม่เจอ ให้ส่ง Error 404 กลับไป
-  if (!user) {
-    return res.status(404).json({ error: "User not found!" });
+  const { username, email, password, role } = req.body || {};
+
+  // เอาเฉพาะ field ที่ส่งมาจริงๆ
+  const updates = {};
+  if (username) updates.username = username;
+  if (email) updates.email = email;
+  if (password) updates.password = password;
+  if (role) updates.role = role;
+
+  if (Object.keys(updates).length === 0) {
+    return res.status(400).json({
+      success: false,
+      error: "At least one field is required to update",
+    });
   }
-  // 3. ใช้ Destructuring ดึงค่าใหม่จาก req.body
-  const { username, email, password } = req.body;
-  // 4. ตรวจสอบว่าส่งข้อมูลมาครบหรือไม่ (username, email และ password)
-  if (!username || !email || !password) {
-    return res
-      .status(400)
-      .json({ error: "username, email and password are required!" });
+
+  try {
+    const { data, error } = await supabase
+      .from("users")
+      .update(updates)
+      .eq("id", req.params.id)
+      .select(PG_SELECT)
+      .single();
+
+    if (error) throw error;
+
+    if (!data) {
+      return res.status(404).json({ success: false, error: "User not found!" });
+    }
+
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    return res.status(400).json({ success: false, error: error.message });
   }
-  // 5. อัปเดตข้อมูลใน Object เดิมด้วยค่าใหม่ที่รับมา
-  user.username = username;
-  user.email = email;
-  user.password = password;
-  // 6. ส่งข้อมูลที่อัปเดตแล้วกลับไปพร้อม Status 200 OK
-  res.status(200).json(user);
 });
 
 router.delete("/pg/:id", async (req, res) => {
-  // 1. หาตำแหน่งของ user จาก id ที่ส่งมาใน URL
-  const userIndex = users.findIndex((u) => u.id === req.params.id);
+  try {
+    const { data, error } = await supabase
+      .from("users")
+      .delete()
+      .eq("id", req.params.id)
+      .select(PG_SELECT)
+      .single();
 
-  // 2. ถ้าไม่เจอ user ให้ส่ง error 404 กลับไป
-  if (userIndex === -1) {
-    return res.status(404).json({ error: "User not found!" });
+    if (error) throw error;
+
+    if (!data) {
+      return res.status(404).json({ success: false, error: "User not found!" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Delete user successfully!",
+      data,
+    });
+  } catch (error) {
+    return res.status(400).json({ success: false, error: error.message });
   }
-
-  // 3. ลบ user ออกจาก array และเก็บข้อมูลที่ถูกลบไว้
-  const deletedUser = users.splice(userIndex, 1)[0];
-
-  // 4. ส่งผลลัพธ์กลับไปเมื่อ delete สำเร็จ
-  return res.status(200).json({
-    message: "Delete user successfully!",
-    user: deletedUser,
-  });
 });
-*/

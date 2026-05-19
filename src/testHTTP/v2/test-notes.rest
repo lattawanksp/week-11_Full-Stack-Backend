@@ -1,0 +1,27 @@
+### Read all notes
+GET http://localhost:3002/api/v2/notes
+
+### Create a new note
+POST http://localhost:3002/api/v2/notes
+Content-Type: application/json
+
+{
+    "title": "test note4",
+    "content": "test content4",
+    "category": "Programming",
+    "status": "Todo"
+}
+
+### Update a note
+PUT http://localhost:3002/api/v2/notes/6a0baa3db8dd529cb77fea8f
+Content-Type: application/json
+
+{
+    "title": "test note updated",
+    "content": "test content updated",
+    "category": "Personal",
+    "status": "In Progress"
+}
+
+### Delete a note
+DELETE http://localhost:3002/api/v2/notes/6a0baa62b8dd529cb77fea92

@@ -1,0 +1,25 @@
+### Read all products
+GET http://localhost:3002/api/v2/products
+
+### Create a new user
+POST http://localhost:3002/api/v2/products
+Content-Type: application/json
+
+{
+    "name": "test1",
+    "price": 89000,
+    "category": "Furniture"
+}
+
+### Update a user
+PUT http://localhost:3002/api/v2/products/6a0ba56106f1cc21e0f3838a
+Content-Type: application/json
+
+{
+    "name": "delete1",
+    "price": 5000,
+    "category": "Furniture"
+}
+
+### Delete a user
+DELETE http://localhost:3002/api/v2/products/6a0ba56106f1cc21e0f3838a
