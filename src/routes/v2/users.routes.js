@@ -6,6 +6,7 @@ import {
   createUser,
   updateUser,
   deleteUser,
+  loginUser,
 } from "../../modules/users/users.v2.controller.js";
 
 export const router = Router();
@@ -19,6 +20,8 @@ router.post("/", createUser);
 router.put("/:id", updateUser);
 
 router.delete("/:id", deleteUser);
+
+router.post("/login", loginUser);
 
 //Supabase / PostgreSQL routes (/api/v2/users/pg)
 // Password is excluded from SELECT.

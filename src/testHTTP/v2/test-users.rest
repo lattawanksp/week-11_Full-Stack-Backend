@@ -7,9 +7,9 @@ POST http://localhost:3002/api/v2/users
 Content-Type: application/json
 
 {
-    "username": "test6",
-    "email": "test6@atsr.com",
-    "password": "ttttttttt"
+    "username": "test11",
+    "email": "test11@atsr.com",
+    "password": "test123456"
 }
 
 ### Update a user
@@ -24,3 +24,12 @@ Content-Type: application/json
 
 ### Delete a user
 DELETE http://localhost:3002/api/v2/users/6a0b1201a930b9b7d4e862b1
+
+### login user
+POST http://localhost:3002/api/v2/users/login
+Content-Type: application/json
+
+{
+  "email": "test11@atsr.com",
+  "password": "test123456"
+}

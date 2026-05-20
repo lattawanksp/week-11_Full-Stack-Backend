@@ -37,13 +37,10 @@ export const createUser = async (req, res, next) => {
       return next(err);
     }
 
-    // Hash password ก่อน save
-    const hashedPassword = await bcrypt.hash(password, 12);
-
     const doc = await User.create({
       username,
       email,
-      password: hashedPassword,
+      password,
       role,
     });
     return res.status(201).json({ success: true, data: userResponse(doc) });
@@ -99,5 +96,46 @@ export const deleteUser = async (req, res, next) => {
     });
   } catch (err) {
     next(err); // ✅
+  }
+};
+
+// login
+export const loginUser = async (req, res, next) => {
+  const { email, password } = req.body || {};
+
+  if (!email || !password) {
+    const err = new Error("email and password are required");
+    err.name = "ValidationError";
+    err.status = 400;
+    return next(err);
+  }
+
+  try {
+    // หา user จาก email
+    const userInDB = await User.findOne({ email }).select("+password");
+
+    console.log("userInDB:", userInDB);
+    console.log("password from request:", password);
+    console.log("password in DB:", userInDB?.password);
+
+    if (!userInDB) {
+      const err = new Error("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+      err.status = 401;
+      return next(err);
+    }
+
+    // เช็ค password
+    const isMatch = await bcrypt.compare(password, userInDB.password);
+    if (!isMatch) {
+      const err = new Error("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+      err.status = 401;
+      return next(err);
+    }
+
+    return res
+      .status(200)
+      .json({ success: true, message: "เข้าสู่ระบบสำเร็จ!" });
+  } catch (err) {
+    next(err);
   }
 };
