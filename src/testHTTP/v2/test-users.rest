@@ -7,8 +7,8 @@ POST http://localhost:3002/api/v2/users
 Content-Type: application/json
 
 {
-    "username": "test3",
-    "email": "test3@atsr.com",
+    "username": "test6",
+    "email": "test6@atsr.com",
     "password": "ttttttttt"
 }
 

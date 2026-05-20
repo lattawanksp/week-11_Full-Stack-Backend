@@ -1,4 +1,5 @@
 import { User } from "./user.model.js";
+import bcrypt from "bcrypt";
 
 const userResponse = (doc) => {
   const user = doc.toObject();
@@ -15,6 +16,7 @@ export const getUsers = async (req, res, next) => {
   }
 };
 
+//register
 export const createUser = async (req, res, next) => {
   const { username, email, password, role } = req.body || {};
 
@@ -26,10 +28,27 @@ export const createUser = async (req, res, next) => {
   }
 
   try {
-    const doc = await User.create({ username, email, password, role });
+    // เช็คว่า email ซ้ำไหม
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      const err = new Error("อีเมลนี้ถูกใช้งานแล้ว");
+      err.name = "ValidationError";
+      err.status = 400;
+      return next(err);
+    }
+
+    // Hash password ก่อน save
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    const doc = await User.create({
+      username,
+      email,
+      password: hashedPassword,
+      role,
+    });
     return res.status(201).json({ success: true, data: userResponse(doc) });
   } catch (err) {
-    next(err); // ✅ next(err) ต้องมาก่อน return
+    next(err);
   }
 };
 
