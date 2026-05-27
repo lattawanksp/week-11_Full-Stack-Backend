@@ -9,7 +9,12 @@ import { router as apiRoutes } from "./routes/index.js";
 import { connectSupabase } from "./config/supabase.js";
 
 const app = express();
-const allowedOrigins = ["http://localhost:5173", "http://localhost:5174"];
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "https://week-12-full-stack-frontend.vercel.app",
+  process.env.FRONTEND_URL,
+].filter(Boolean);
 
 app.use(
   cors({
