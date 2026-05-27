@@ -1,0 +1,58 @@
+@baseUrl = http://localhost:3002/api/v2/users
+
+#update a real user in MongoDB
+@validEmail    = linlinlin@atsr.com
+@validPassword = linlinlin
+
+### 1. LOGIN — success
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+    "email": "{{validEmail}}",
+    "password": "{{validPassword}}"
+}
+
+### 2. LOGIN — missing credentials (expect 400)
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+    "email": "{{validEmail}}"
+}
+
+### 3. LOGIN — wrong password (expect 400)
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+    "email": "{{validEmail}}",
+    "password": "wrongpassword"
+}
+
+### 4. LOGIN — user not found (expect 400)
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+    "email": "doesnotexist@example.com",
+    "password": "password123"
+}
+
+### 5. CHECK SESSION — success
+### The REST Client stores the Set-Cookie header from request #1 automatically.
+GET {{baseUrl}}/auth/me
+
+### 6. CHECK SESSION — no token (expect 401)
+GET {{baseUrl}}/auth/me
+Cookie: accessToken=
+
+### 7. CHECK SESSION — expired/invalid token
+GET {{baseUrl}}/auth/me
+Cookie: accessToken=this.is.not.a.valid.jwt
+
+### 8. LOGOUT — success
+POST {{baseUrl}}/auth/logout
+
+### 9. CHECK SESSION after logout — expect 401
+GET {{baseUrl}}/auth/me

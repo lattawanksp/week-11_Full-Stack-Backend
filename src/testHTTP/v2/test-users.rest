@@ -7,9 +7,9 @@ POST http://localhost:3002/api/v2/users
 Content-Type: application/json
 
 {
-    "username": "test11",
-    "email": "test11@atsr.com",
-    "password": "test123456"
+    "username": "linlinlin",
+    "email": "linlinlin@atsr.com",
+    "password": "linlinlin"
 }
 
 ### Update a user

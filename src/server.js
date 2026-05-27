@@ -1,14 +1,36 @@
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
+import helmet from "helmet";
 
 import { connectDB } from "./config/mongodb.js";
+import { apiRateLimiter } from "./middlewares/rateLimiter.js";
 import { router as apiRoutes } from "./routes/index.js";
 import { connectSupabase } from "./config/supabase.js";
 
 const app = express();
+const allowedOrigins = ["http://localhost:5173", "http://localhost:5174"];
 
-app.use(cors());
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Origin not allowed by CORS"));
+    },
+    credentials: true,
+  }),
+);
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+  }),
+);
+app.use(apiRateLimiter);
 app.use(express.json());
+app.use(cookieParser());
 
 app.use("/api", apiRoutes);
 
@@ -45,7 +67,6 @@ app.get("/", (req, res) => {
   </html>`);
 });
 
-// Centralized error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(err.status || 500).json({
@@ -54,7 +75,7 @@ app.use((err, req, res, next) => {
     path: req.originalUrl,
     method: req.method,
     timestamp: new Date().toISOString(),
-    stack: err.stack,
+    ...(process.env.NODE_ENV !== "production" ? { stack: err.stack } : {}),
   });
 });
 
@@ -64,5 +85,5 @@ await connectDB();
 await connectSupabase();
 
 app.listen(PORT, () => {
-  console.log(`Server running on PORT: ${PORT} 🌍`);
+  console.log(`Server running on PORT: ${PORT}`);
 });

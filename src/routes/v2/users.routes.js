@@ -1,31 +1,73 @@
 import { Router } from "express";
-import { User } from "../../modules/users/user.model.js";
+
 import { supabase } from "../../config/supabase.js";
+import { authUser, requireRole } from "../../middlewares/auth.js";
+import { authRateLimiter } from "../../middlewares/rateLimiter.js";
 import {
-  getUsers,
+  askUsers,
   createUser,
-  updateUser,
   deleteUser,
+  getUsers,
   loginUser,
+  reindexUserEmbeddings,
+  registerUser,
+  updateUser,
 } from "../../modules/users/users.v2.controller.js";
 
 export const router = Router();
 
-//MongoDB routes (/api/v2/users)
-
+// MongoDB routes (/api/v2/users)
 router.get("/", getUsers);
+router.post("/", authUser, requireRole("admin"), createUser);
+router.post("/register", authRateLimiter, registerUser);
+router.put("/:id", authUser, requireRole("admin"), updateUser);
+router.delete("/:id", authUser, requireRole("admin"), deleteUser);
+router.post("/admin/reindex-embeddings", authUser, requireRole("admin"), reindexUserEmbeddings);
+router.post("/login", authRateLimiter, loginUser);
+router.post("/ask", authUser, askUsers);
 
-router.post("/", createUser);
+router.get("/auth/me", authUser, async (req, res, next) => {
+  try {
+    const user = req.user.user;
 
-router.put("/:id", updateUser);
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "User not found!",
+      });
+    }
 
-router.delete("/:id", deleteUser);
+    return res.status(200).json({
+      success: true,
+      data: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 
-router.post("/login", loginUser);
+router.post("/auth/logout", (req, res) => {
+  const isProd = process.env.NODE_ENV === "production";
 
-//Supabase / PostgreSQL routes (/api/v2/users/pg)
-// Password is excluded from SELECT.
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
+    path: "/",
+  });
 
+  return res.status(200).json({
+    success: true,
+    message: "Logged out successfully!",
+  });
+});
+
+// Supabase / PostgreSQL routes (/api/v2/users/pg)
 const PG_SELECT = "id, username, email, role, created_at, updated_at";
 
 router.get("/pg", async (req, res) => {
@@ -67,9 +109,8 @@ router.post("/pg", async (req, res) => {
 
 router.put("/pg/:id", async (req, res) => {
   const { username, email, password, role } = req.body || {};
-
-  // เอาเฉพาะ field ที่ส่งมาจริงๆ
   const updates = {};
+
   if (username) updates.username = username;
   if (email) updates.email = email;
   if (password) updates.password = password;

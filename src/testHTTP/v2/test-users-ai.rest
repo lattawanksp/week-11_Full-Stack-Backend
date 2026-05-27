@@ -1,0 +1,24 @@
+@baseUrl = http://localhost:3002/api/v2/users
+
+### 1. Login as admin or user
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "admin2@atsr.com",
+  "password": "Admin12345"
+}
+
+### 2. Reindex all user embeddings
+### Requires admin cookie from request #1
+POST {{baseUrl}}/admin/reindex-embeddings
+
+### 3. Ask AI about users
+### Requires cookie from request #1
+POST {{baseUrl}}/ask
+Content-Type: application/json
+
+{
+  "question": "Who are the admins and what are their emails?",
+  "topK": 5
+}
